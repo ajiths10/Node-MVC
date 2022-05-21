@@ -18,7 +18,8 @@ main {
 form {
   display: inline;
 }
-.center{
+
+.centered {
   text-align: center;
 }
 
