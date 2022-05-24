@@ -70,5 +70,4 @@ static deleteproductbyID(id) {
     });
   }
 )}
-
 }
