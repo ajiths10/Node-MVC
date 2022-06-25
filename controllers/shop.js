@@ -60,11 +60,12 @@ exports.getCart = (req, res, next) => {
       return cart
         .getProducts()
         .then((products) => {
-          res.render("shop/cart", {
-            path: "/cart",
-            pageTitle: "Your Cart",
-            products: products,
-          });
+          res.send(products);
+          // res.render("shop/cart", {
+          //   path: "/cart",
+          //   pageTitle: "Your Cart",
+          //   products: products,
+          // });
         })
         .catch((err) => console.log(err));
     })
@@ -90,6 +91,9 @@ exports.getCart = (req, res, next) => {
 };
 
 exports.postCart = (req, res, next) => {
+  if(!req.body && !req.body.productId){
+    return res.status(400).send({status: error , message: "productId is missing in payload" })
+  }
   const prodId = req.body.productId;
   let fetchedCart;
   let newQuantity = 1;
