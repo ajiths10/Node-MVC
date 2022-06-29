@@ -1,12 +1,13 @@
 const Product = require("../models/product");
 const Cart = require("../models/cart");
+const Checkout = require("../models/checkout");
 
 const ITEMS_PER_Page = 2;
 
 exports.getProducts = (req, res, next) => {
   Product.findAll()
     .then((products) => {
-      res.send({products})
+      res.send({ products });
       // res.render("shop/product-list", {
       //   prods: products,
       //   pageTitle: "All Products",
@@ -41,21 +42,20 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  const value = req?.query?.page? req.query.page : 1;
-  const page = Number(value)
-  console.log('====>',page)
-  Product
-  .findAndCountAll({
-    offset: (page -1 ) * ITEMS_PER_Page,
+  const value = req?.query?.page ? req.query.page : 1;
+  const page = Number(value);
+  console.log("====>", page);
+  Product.findAndCountAll({
+    offset: (page - 1) * ITEMS_PER_Page,
     limit: ITEMS_PER_Page,
-})
+  })
     .then((products) => {
-     res.json({
-      products: products ,
-    currentPage: page,
-    nextPage: products.count / 2 > page ? page+1 : 1 ,
-    previousPage: page -1
-    })
+      res.json({
+        products: products,
+        currentPage: page,
+        nextPage: products.count / 2 > page ? page + 1 : 1,
+        previousPage: page - 1,
+      });
       // res.render("shop/index", {
       //   prods: products,
       //   pageTitle: "Shop",
@@ -106,8 +106,10 @@ exports.getCart = (req, res, next) => {
 };
 
 exports.postCart = (req, res, next) => {
-  if(!req.body && !req.body.productId){
-    return res.status(400).send({status: error , message: "productId is missing in payload" })
+  if (!req.body && !req.body.productId) {
+    return res
+      .status(400)
+      .send({ status: error, message: "productId is missing in payload" });
   }
   const prodId = req.body.productId;
   let fetchedCart;
@@ -152,11 +154,12 @@ exports.postCartDeleteProduct = (req, res, next) => {
       return cart.getProducts({ where: { id: prodId } });
     })
     .then((products) => {
-      let product = products[0]
+      let product = products[0];
       return product.cartItem.destroy();
     })
     .then(() => {
-      res.redirect("/cart");
+      res.json({ message: "Success" });
+      //res.redirect("/cart");
     })
     .catch((err) => console.log(err));
 };
@@ -173,4 +176,23 @@ exports.getCheckout = (req, res, next) => {
     path: "/checkout",
     pageTitle: "Checkout",
   });
+};
+
+exports.postCheckout = (req, res, next) => {
+ req.user.getCart()
+ .then(cart => {
+  return cart.getProducts();
+ })
+ .then(products => {
+  return req.user.createCheckout()
+  .then(order => {
+    order.addProducts(products.map(ele => {
+      ele.customcheckout = {quantity: ele.cartItem.quantity };
+      return ele;
+    }));
+  })
+ .catch((err) => console.log(err));
+ })
+ .then((response)=> res.json(response))
+ .catch((err) => console.log(err));
 };

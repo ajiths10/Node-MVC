@@ -10,6 +10,8 @@ const Product = require('./models/product');
 const User = require('./models/user');
 const Cart = require('./models/cart');
 const CartItem = require('./models/cart-item');
+const Checkout = require('./models/checkout');
+const CustomCheckout = require('./models/customcheckout');
 
 const app = express();
 
@@ -45,8 +47,12 @@ Cart.belongsTo(User);
 Cart.belongsToMany(Product, { through: CartItem });
 Product.belongsToMany(Cart, { through: CartItem });
 
+Checkout.belongsTo(User);
+User.hasMany(Checkout);
+Checkout.belongsToMany(Product, { through: CustomCheckout })
+
 sequelize
-  // .sync({ force: true })
+  //.sync({ force: true })
   .sync()
   .then(result => {
     return User.findByPk(1);
@@ -61,6 +67,7 @@ sequelize
   .then(user => {
     // console.log(user);
     //return user.createCart();
+    //return user.createCheckout();
   })
   .then(cart =>{
     app.listen(4000);
