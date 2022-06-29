@@ -179,20 +179,39 @@ exports.getCheckout = (req, res, next) => {
 };
 
 exports.postCheckout = (req, res, next) => {
- req.user.getCart()
- .then(cart => {
-  return cart.getProducts();
- })
- .then(products => {
-  return req.user.createCheckout()
-  .then(order => {
-    order.addProducts(products.map(ele => {
-      ele.customcheckout = {quantity: ele.cartItem.quantity };
-      return ele;
-    }));
-  })
- .catch((err) => console.log(err));
- })
- .then((response)=> res.json(response))
- .catch((err) => console.log(err));
+  let fetchedCart;
+  let responseValue;
+  req.user
+    .getCart()
+    .then((cart) => {
+      fetchedCart = cart;
+      return cart.getProducts();
+    })
+    .then((products) => {
+      return req.user
+        .createCheckout()
+        .then((order) => {
+          return order.addProducts(
+            products.map((ele) => {
+              ele.customcheckout = { quantity: ele.cartItem.quantity };
+              return ele;
+            })
+          );
+        })
+        .then((value) => {
+          console.log("===>", value);
+          responseValue = value;
+        })
+        .catch((err) => console.log(err));
+    })
+    .then(() => fetchedCart.setProducts(null))
+    .then()
+    .then((response) =>
+      res.json({
+        message: "Success",
+        data: responseValue ? responseValue : [],
+        status: true,
+      })
+    )
+    .catch((err) => console.log(err));
 };
