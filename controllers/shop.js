@@ -215,3 +215,12 @@ exports.postCheckout = (req, res, next) => {
     )
     .catch((err) => console.log(err));
 };
+
+exports.getYourOrders = (req, res, next) => {
+  req.user
+  .getCheckouts({include: ['products']})
+  .then((item) => {
+    res.send(item)
+  })
+  .catch((err) => console.log(err));
+};
